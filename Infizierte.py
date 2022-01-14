@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -29,6 +30,9 @@ dict_kreise = dict(zip(df_csv.to_numpy()[:,0],nkreise))
 #
 df_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/Infizierte220111.csv',header=None, sep=';',na_filter=False)
 data=df_csv.to_numpy()
+#
+dfEWZ_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/EWZLandkreise.csv', sep=';',na_filter=False)
+dict_EWZkreise = dict(dfEWZ_csv.to_numpy())
 
 # transform data to float
 irange=np.arange(data.shape[0])
@@ -44,11 +48,16 @@ for i in irange:
             datafloat[i,j]=float(data[i,j])
             dataint[i,j]=int(data[i,j])
 #
-kreisliste = ['Emmendingen', 'Freiburg im Breisgau (Stadtkreis)','Ortenaukreis']
+kreisliste = ['Schwäbisch Hall', 'Freiburg im Breisgau (Stadtkreis)']
 EWZahl = np.ones(44)
 EWZahl[36] = 230940
 EWZahl[6] = 166862
 EWZahl[20] = 432580
+EWZahl[0] = 198204
+EWZahl[40] = 309721
+EWZahl[35] = 55449
+EWZahl[14] = 308436
+EWZahl[28] = 197860
 
 # %matplotlib notebook
 fig, ax = plt.subplots() # let us plot the data
@@ -58,11 +67,10 @@ for kreis in kreisliste:
     #factor = 1.
     #y = np.flip(datafloat[dict_kreise[kreis]])
     y = np.flip(datafloat[dict_kreise[kreis],1:])
-    y14 = np.roll(y,14)
+    y14 = np.roll(y,7)
     y14[:13] = 0
     delta = y  - y14
-    deltabool = delta > 0
-    ax.plot(factor*delta[deltabool], label=kreis)
+    ax.plot(factor*delta[0:], label=kreis)
     #ax.plot(y, label=kreis)
 #
 ax.legend()
@@ -80,16 +88,21 @@ EWZahl[20] = 432580
 df_dict_kreise = pd.DataFrame(dict_kreise.items())
 df_dict_kreise.to_csv("Landkreise.dat",sep='\t')
 
-dfEWZ_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/EWZLandkreise.csv', sep=';',na_filter=False)
-dict_EWZkreise = dict(dfEWZ_csv.to_numpy())
+
+
+dict_kreise
+
+dict_EWZkreise['Konstanz, Landkreis']
+
+a=np.arange(8)
+
+a.reshape((2,4)).T
+
+dict_kreise
 
 dict_EWZkreise
 
-for mystr in dict_kreise.keys():
-    print(mystr)
-    if(any(key.startswith(mystr) for key in dict_EWZkreise.keys())):
-        print(mystr,key)
-
-dict_EWZkreise
+for key in kreisliste:
+    print(dict_kreise[key])
 
 
