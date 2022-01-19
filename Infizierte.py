@@ -31,8 +31,9 @@ dict_kreise = dict(zip(df_csv.to_numpy()[:,0],nkreise))
 df_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/Infizierte220111.csv',header=None, sep=';',na_filter=False)
 data=df_csv.to_numpy()
 #
-dfEWZ_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/EWZLandkreise.csv', sep=';',na_filter=False)
+dfEWZ_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/EWZLandkreise.csv',header=None, sep=';',na_filter=False)
 dict_EWZkreise = dict(dfEWZ_csv.to_numpy())
+
 
 # transform data to float
 irange=np.arange(data.shape[0])
@@ -48,7 +49,7 @@ for i in irange:
             datafloat[i,j]=float(data[i,j])
             dataint[i,j]=int(data[i,j])
 #
-kreisliste = ['Schwäbisch Hall', 'Freiburg im Breisgau (Stadtkreis)']
+kreisliste = ['Freiburg im Breisgau (Stadtkreis)', 'Schwäbisch Hall']
 EWZahl = np.ones(44)
 EWZahl[36] = 230940
 EWZahl[6] = 166862
@@ -58,6 +59,8 @@ EWZahl[40] = 309721
 EWZahl[35] = 55449
 EWZahl[14] = 308436
 EWZahl[28] = 197860
+EWZahl[42] = 630305
+#
 
 # %matplotlib notebook
 fig, ax = plt.subplots() # let us plot the data
@@ -78,31 +81,50 @@ ax.set_title('Die 7-Tage Inzidenz, absolut')
 ax.set(xlabel='Tag')
 ax.set(ylabel='Anzahl')
 
-dict_kreise
+yHall = datafloat[28,1:]
+yFrei =datafloat[36,1:]
+DeltaHall = (yHall-np.roll(yHall,-7))*1.e5/EWZahl[28]
+DeltaFrei = (yFrei-np.roll(yFrei,-7))*1.e5/EWZahl[36]
+plt.plot(np.flip(DeltaHall[:-7]))
+plt.plot(np.flip(DeltaFrei[:-7]))
 
-EWZahl = np.ones(44)
-EWZahl[36] = 230940
-EWZahl[6] = 166862
-EWZahl[20] = 432580
+# # Correlation functions
+#
+# The correlation function for two signals $A(t)$ and $B(t)$ is defined as 
+# $$C(t)=\lim_{\tau\rightarrow\infty}\frac{1}{\tau}\int\limits_0^\tau A(t')B(t'-t)dt'$$
+#
+# Let's have some examples.
+#
+# Note: Please subtract mean of every series A and B. See below
 
-df_dict_kreise = pd.DataFrame(dict_kreise.items())
-df_dict_kreise.to_csv("Landkreise.dat",sep='\t')
+# %matplotlib notebook
+# A = B = sin(a t)
+n = 200000
+a = 1.
+t = np.linspace(0,20*np.pi,n)
+#A = np.sin(t)
+#B = np.cos(t)
+A = np.random.rand(n)
+B = np.random.rand(n)
+A = A - np.mean(A)
+B = B - np.mean(B)
+#plt.plot(t, A)
+#plt.plot(t, B)
 
+# Calculate Korrelation function between A and B. Watch out for the correct n
+lmax = n//2
+C = np.zeros(lmax)
+for k in np.arange(lmax):
+    C[k] = np.sum(A[:-k] * np.roll(B, shift = -k)[:-k])/(n-k)
+    
 
+# %matplotlib notebook
+plt.plot(C)
 
-dict_kreise
+np.mean(np.flip(datafloat[dict_kreise[kreisliste[0]],1:]))
 
-dict_EWZkreise['Konstanz, Landkreis']
-
-a=np.arange(8)
-
-a.reshape((2,4)).T
-
-dict_kreise
-
-dict_EWZkreise
-
-for key in kreisliste:
-    print(dict_kreise[key])
+# %matplotlib notebook
+# Plot Freiburg incidences - mean
+plt.plot(datafloat[dict_kreise[kreisliste[0]],1:]-np.mean(datafloat[dict_kreise[kreisliste[0]],1:]))
 
 
