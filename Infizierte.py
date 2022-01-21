@@ -85,46 +85,81 @@ yHall = datafloat[28,1:]
 yFrei =datafloat[36,1:]
 DeltaHall = (yHall-np.roll(yHall,-7))*1.e5/EWZahl[28]
 DeltaFrei = (yFrei-np.roll(yFrei,-7))*1.e5/EWZahl[36]
-plt.plot(np.flip(DeltaHall[:-7]))
-plt.plot(np.flip(DeltaFrei[:-7]))
+#plt.plot(np.flip(DeltaHall[:-7]))
+#plt.plot(np.flip(DeltaFrei[:-7]))
 
 # # Correlation functions
 #
 # The correlation function for two signals $A(t)$ and $B(t)$ is defined as 
-# $$C(t)=\lim_{\tau\rightarrow\infty}\frac{1}{\tau}\int\limits_0^\tau A(t')B(t'-t)dt'$$
-#
+# $$
+# C(t)=\lim_{\tau\rightarrow\infty}\frac{1}{\tau}\int\limits_0^\tau A(t')B(t'-t)dt'$$
+# Diskrete version
+# $$ C(k\cdot\Delta\,t)=\lim_{\Delta\,t\rightarrow 0\atop n\rightarrow\infty}\sum_{i=1}^{n}A(i\cdot\Delta\,t)\cdot
+# B\left((i-k)\cdot\Delta\,t\right)$$
 # Let's have some examples.
 #
 # Note: Please subtract mean of every series A and B. See below
 
 # %matplotlib notebook
 # A = B = sin(a t)
-n = 200000
+n = 20000
 a = 1.
 t = np.linspace(0,20*np.pi,n)
 #A = np.sin(t)
 #B = np.cos(t)
 A = np.random.rand(n)
 B = np.random.rand(n)
-A = A - np.mean(A)
-B = B - np.mean(B)
-#plt.plot(t, A)
-#plt.plot(t, B)
+A = A - np.mean(A) # Subtract mean
+B = B - np.mean(B) # dto.
+plt.plot(t, A)
+plt.plot(t, B)
 
 # Calculate Korrelation function between A and B. Watch out for the correct n
-lmax = n//2
+A = datafloat[36,1:]
+B = datafloat[28,1:]
+A = A - np.mean(A)
+B = B - np.mean(B)
+lmax = B.shape[0]//2
 C = np.zeros(lmax)
+S_A = np.sqrt(np.sum(A[:lmax]*A[:lmax])/lmax)
 for k in np.arange(lmax):
-    C[k] = np.sum(A[:-k] * np.roll(B, shift = -k)[:-k])/(n-k)
-    
+    D = np.roll(B, shift = -k)[:lmax]
+    S_B = np.sqrt(np.sum(D*D)/lmax)
+    C[k] = np.sum(A[:lmax] * D)/lmax/S_A/S_B
+
 
 # %matplotlib notebook
-plt.plot(C)
+plt.plot(C[1:])
 
 np.mean(np.flip(datafloat[dict_kreise[kreisliste[0]],1:]))
 
+# ## Correlation between incidences of 2 counties in BW
+#
+
 # %matplotlib notebook
+fig, ax = plt.subplots() # let us plot the data
 # Plot Freiburg incidences - mean
-plt.plot(datafloat[dict_kreise[kreisliste[0]],1:]-np.mean(datafloat[dict_kreise[kreisliste[0]],1:]))
+for kreis in kreisliste:
+    ax.plot(datafloat[dict_kreise[kreis],1:]-np.mean(datafloat[dict_kreise[kreis],1:]), label = kreis)
+ax.legend()
+ax.set_title('Infizierte')
+ax.set(xlabel='Tag')
+ax.set(ylabel='Anzahl')
+
+
+dict_kreise['Schwäbisch Hall']
+
+A = np.arange(10)
+B = np.arange(10,20)
+
+A
+
+np.roll(B, shift = -1)
+
+np.sum((A*np.roll(B, shift = -1))[:-1])
+
+datafloat[36,1:].shape[0]
+
+B
 
 
