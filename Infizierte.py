@@ -21,17 +21,13 @@ import matplotlib.pyplot as plt
 
 # Here we read the csv-file holding the data.
 # Note: the separator is a ; instead of a comma, all NA-values gave to be skipped
-df_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/Infizierte.csv', sep=';',na_filter=False)
-keys=df_csv.keys()
-# Let us pack the counties names into a dictionary and number them
-# e.g. {'Biberach': 1}
-nkreise=np.arange(len(df_csv.to_numpy()[:,0]))
-dict_kreise = dict(zip(df_csv.to_numpy()[:,0],nkreise))
 #
-df_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/Infizierte220111.csv',header=None, sep=';',na_filter=False)
+df_csv = pd.read_csv('Infizierte220111.csv',header=None, sep=';',na_filter=False)
 data=df_csv.to_numpy()
+nkreise=np.arange(len(data[:,0]))
+dict_kreise = dict(zip(data[:,0],nkreise))
 #
-dfEWZ_csv = pd.read_csv('/Users/greiner/Programming/Python/FreiburgSeminar/EWZLandkreise.csv',header=None, sep=';',na_filter=False)
+dfEWZ_csv = pd.read_csv('EWZLandkreise.csv',header=None, sep=';',na_filter=False)
 dict_EWZkreise = dict(dfEWZ_csv.to_numpy())
 
 
@@ -48,24 +44,12 @@ for i in irange:
         else:
             datafloat[i,j]=float(data[i,j])
             dataint[i,j]=int(data[i,j])
-#
-kreisliste = ['Freiburg im Breisgau (Stadtkreis)', 'Schwäbisch Hall']
-EWZahl = np.ones(44)
-EWZahl[36] = 230940
-EWZahl[6] = 166862
-EWZahl[20] = 432580
-EWZahl[0] = 198204
-EWZahl[40] = 309721
-EWZahl[35] = 55449
-EWZahl[14] = 308436
-EWZahl[28] = 197860
-EWZahl[42] = 630305
-#
 
 # %matplotlib notebook
+kreisliste = ['Freiburg im Breisgau (Stadtkreis)', 'Schwäbisch Hall']
 fig, ax = plt.subplots() # let us plot the data
 for kreis in kreisliste:
-#for i in np.arange(44):
+    factor=1.e5/dict_EWZkreise[kreis]
     factor=1.e5/EWZahl[dict_kreise[kreis]]
     #factor = 1.
     #y = np.flip(datafloat[dict_kreise[kreis]])
@@ -161,5 +145,13 @@ np.sum((A*np.roll(B, shift = -1))[:-1])
 datafloat[36,1:].shape[0]
 
 B
+
+dict_EWZkreise.keys()
+
+df_csv = pd.read_csv('Infizierte220111.csv',header=None, sep=';',na_filter=False)
+nkreise=np.arange(len(df_csv.to_numpy()[:,0]))
+dict_kreise = dict(zip(df_csv.to_numpy()[:,0],nkreise))
+
+dict_kreise.keys()
 
 
