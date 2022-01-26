@@ -50,9 +50,7 @@ kreisliste = ['Freiburg im Breisgau (Stadtkreis)', 'Schwäbisch Hall']
 fig, ax = plt.subplots() # let us plot the data
 for kreis in kreisliste:
     factor=1.e5/dict_EWZkreise[kreis]
-    factor=1.e5/EWZahl[dict_kreise[kreis]]
     #factor = 1.
-    #y = np.flip(datafloat[dict_kreise[kreis]])
     y = np.flip(datafloat[dict_kreise[kreis],1:])
     y14 = np.roll(y,7)
     y14[:13] = 0
