@@ -14,10 +14,12 @@
 # ---
 
 # # Plotting the incidences of BW counties
+#
+# Hier käme noch Text zur Erklärung...
 
-import pandas as pd    # Pandas is a library to analyse various data structures
-import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd               # Pandas is a library to analyse various data structures
+import numpy as np                # numpy is a library for array manipulation mostly like MatLab
+import matplotlib.pyplot as plt   # matplotlib is for plotting
 
 # Here we read the csv-file holding the data.
 # Note: the separator is a ; instead of a comma, all NA-values gave to be skipped
@@ -40,13 +42,11 @@ for i in irange:
     for j in jrange:
         if data[i,j] =='': 
             datafloat[i,j]=0.
-            dataint[i,j]=0
         else:
             datafloat[i,j]=float(data[i,j])
-            dataint[i,j]=int(data[i,j])
 
 # %matplotlib notebook
-kreisliste = ['Freiburg im Breisgau (Stadtkreis)', 'Schwäbisch Hall']
+kreisliste = [ 'Schwäbisch Hall', 'Lörrach']
 fig, ax = plt.subplots() # let us plot the data
 for kreis in kreisliste:
     factor=1.e5/dict_EWZkreise[kreis]
@@ -75,16 +75,41 @@ DeltaFrei = (yFrei-np.roll(yFrei,-7))*1.e5/EWZahl[36]
 # The correlation function for two signals $A(t)$ and $B(t)$ is defined as 
 # $$
 # C(t)=\lim_{\tau\rightarrow\infty}\frac{1}{\tau}\int\limits_0^\tau A(t')B(t'-t)dt'$$
-# Diskrete version
-# $$ C(k\cdot\Delta\,t)=\lim_{\Delta\,t\rightarrow 0\atop n\rightarrow\infty}\sum_{i=1}^{n}A(i\cdot\Delta\,t)\cdot
-# B\left((i-k)\cdot\Delta\,t\right)$$
-# Let's have some examples.
+# Diskrete version in terms of python numpy arrays, the algorithms. Unfortunately the limit $n\rightarrow\infty$ we cannot do. So we keep a finite $n$ as the length of an array. This gives us
+# $$C[k]=\frac{1}{(n-k)}\sum_{i=0}^{n-k}A[i]\cdot B[i+k]$$
+# In order to normalize the correlation function we divide by the standard deviations of $A(t)$ and $B(t)$ to read
+# $$C(k\cdot\Delta\,t)=\frac{1}{(n-k)}\frac{\sum\limits_{i=0}^{n-k}A[i]\cdot B[i+k]}{S_AS_B}$$
+# where the standard deviations are 
+# $$S_A=\sqrt{\frac{1}{n-k}\sum_{i=0}^{n-k}A(i\cdot\Delta\,t)^2}$$
+# and
+# $$S_B=\sqrt{\frac{1}{n-k}\sum_{i=0}^{n-k}B(i\cdot\Delta\,t+k\cdot\Delta\,t)^2}$$
 #
-# Note: Please subtract mean of every series A and B. See below
+# Note: Please subtract mean of every series $A$ and $B$. See below 
+
+# ### We calculate the correlation function between A and B. Watch out for the correct n
+
+# %matplotlib notebook
+#
+A = datafloat[dict_kreise['Lörrach'],1:] # Choose dataset A
+B = datafloat[dict_kreise['Schwäbisch Hall'],1:] # Choose dataset B
+A = A - np.mean(A) # subtract mean
+B = B - np.mean(B) # subtract mean
+lmax = B.shape[0]//2 # Choose the maximum value of k (see formulae above)
+C = np.zeros(lmax)
+S_A = np.sqrt(np.sum(A[:lmax]*A[:lmax])/lmax) # Standard deviation of A
+for k in np.arange(lmax):
+    D = np.roll(B, shift = -k)[:lmax] # shift and take the first lmax entries
+    S_B = np.sqrt(np.sum(D*D)/lmax) # Standard deviation of B
+    C[k] = np.sum(A[:lmax] * D)/lmax/S_A/S_B # The correlation function
+# Note that we could just skip the division by lmax because it cancels !!!
+plt.plot(C[1:])
+
+
+# ### This is an example for the computation of a correlation function
 
 # %matplotlib notebook
 # A = B = sin(a t)
-n = 20000
+n = 2000
 a = 1.
 t = np.linspace(0,20*np.pi,n)
 #A = np.sin(t)
@@ -95,61 +120,3 @@ A = A - np.mean(A) # Subtract mean
 B = B - np.mean(B) # dto.
 plt.plot(t, A)
 plt.plot(t, B)
-
-# Calculate Korrelation function between A and B. Watch out for the correct n
-A = datafloat[36,1:]
-B = datafloat[28,1:]
-A = A - np.mean(A)
-B = B - np.mean(B)
-lmax = B.shape[0]//2
-C = np.zeros(lmax)
-S_A = np.sqrt(np.sum(A[:lmax]*A[:lmax])/lmax)
-for k in np.arange(lmax):
-    D = np.roll(B, shift = -k)[:lmax]
-    S_B = np.sqrt(np.sum(D*D)/lmax)
-    C[k] = np.sum(A[:lmax] * D)/lmax/S_A/S_B
-
-
-# %matplotlib notebook
-plt.plot(C[1:])
-
-np.mean(np.flip(datafloat[dict_kreise[kreisliste[0]],1:]))
-
-# ## Correlation between incidences of 2 counties in BW
-#
-
-# %matplotlib notebook
-fig, ax = plt.subplots() # let us plot the data
-# Plot Freiburg incidences - mean
-for kreis in kreisliste:
-    ax.plot(datafloat[dict_kreise[kreis],1:]-np.mean(datafloat[dict_kreise[kreis],1:]), label = kreis)
-ax.legend()
-ax.set_title('Infizierte')
-ax.set(xlabel='Tag')
-ax.set(ylabel='Anzahl')
-
-
-dict_kreise['Schwäbisch Hall']
-
-A = np.arange(10)
-B = np.arange(10,20)
-
-A
-
-np.roll(B, shift = -1)
-
-np.sum((A*np.roll(B, shift = -1))[:-1])
-
-datafloat[36,1:].shape[0]
-
-B
-
-dict_EWZkreise.keys()
-
-df_csv = pd.read_csv('Infizierte220111.csv',header=None, sep=';',na_filter=False)
-nkreise=np.arange(len(df_csv.to_numpy()[:,0]))
-dict_kreise = dict(zip(df_csv.to_numpy()[:,0],nkreise))
-
-dict_kreise.keys()
-
-
