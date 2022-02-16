@@ -111,9 +111,9 @@ s=pos.T[0]
 i=pos.T[1]
 r=pos.T[2]
 #
-ls, = plt.plot(t,s, lw=2, label='Suszeptible')
-li, = plt.plot(t,i, lw=2, label='Infected')
-lr, = plt.plot(t,r, lw=2, label='Recovered')
+ls, = ax.plot(t,s, lw=2, label='Suszeptible')
+li, = ax.plot(t,i, lw=2, label='Infected')
+lr, = ax.plot(t,r, lw=2, label='Recovered')
 #ax.plot(t,s,lw=2)
 plt.legend()
 ax.margins(x=0)
