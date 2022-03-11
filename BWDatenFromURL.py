@@ -15,7 +15,11 @@
 
 # # Grafische Darstellung der Inzidenzen in BW
 #
-# Hier käme noch Text zur Erklärung...
+# Wir laden die Daten direkt über die URL
+#
+# https://sozialministerium.baden-wuerttemberg.de/fileadmin/redaktion/m-sm/intern/downloads/Downloads_Gesundheitsschutz/Tabelle_Coronavirus-Faelle-BW.xlsx
+#
+# in das Skript
 
 import pandas as pd               # Pandas ist eine Bibliothek zur Analys verschiedener Datenstrukturen
 import numpy as np                # numpy ist eine Bilbiothek zur array Manipulation so wie MatLab
@@ -33,10 +37,10 @@ now = datetime.now()   # heutiges Datum und Urhzeit
 datum = now.strftime("%Y%m%d")  # Extrahiere Jahr, Monat, Tag
 df_excel.to_excel('CoronafaelleBW'+datum+'.xlsx',sheet_name='Cases')  # Sichere das von der URL gelesene File
 # 
-data = df_excel.to_numpy()[6:-3]  # Konvertiere Pandas Dataframe zu einem numpy array
-data[data == ''] = '0'  # Setze die leeren Einträge auf den String '0'
+data = df_excel.to_numpy()[6:-3]  # Konvertiere Pandas Dataframe in ein numpy array
+data[data == ''] = 0  # Setze die leeren Einträge auf den String '0'
 #
-ni,nj = data[:,1:].shape  # Shape des array (am 5.3.2022 z.B. (44,721))
+ni,nj = data[:,1:].shape  # Shape des array (am 9.3.2022 z.B. (44,726))
 data_int = np.array([[int(z) for z in data[i,1:]] for i in np.arange(ni)])  # Wandle die Stringeinträge in int um
 data_dict = dict(zip(data[:,0],data_int))  # Mache einen Dictionary aus Daten und Kreisnamen
 #
@@ -71,7 +75,7 @@ totalData = np.flip(sum(data_dict.values()))     # Gesamtzahl Infizierter nach D
 ytotal = (totalData - np.roll(totalData,7))
 ax.plot(factor*ytotal[7:], label='GesamtBW')
 #
-kreisliste = [ 'Schwäbisch Hall', 'Lörrach', 'Freiburg']   # Wähle ein paar Kreise die zu plotten willst
+kreisliste = [ 'Schwäbisch Hall', 'Lörrach', 'Freiburg', 'Ludwig']   # Wähle ein paar Kreise die zu plotten willst
 for kreis in kreisliste:
     keystring = keyString(kreis,data_dict) 
     factor=1.e5/dict_EWZkreise[keystring]  # Faktor 7 Tage Inzidenz
@@ -79,7 +83,7 @@ for kreis in kreisliste:
     y7 = np.roll(y,7)     # 7 Tage vorher
     y7[:8] = 0            # Erste 7 Einträge auf 0 setzen. Eigentlich nicht notwendig wenn man von 7 an plottet
     delta = y  - y7       # Differenz zwischen Eintrag und 7 Tage zuvor
-    ax.plot(factor*delta[7:], label=kreis)    # Zeichnen
+    ax.plot(factor*delta[7:], label=keystring)    # Zeichnen
     #ax.plot(y, label=kreis)
 #
 ax.legend()
@@ -171,14 +175,22 @@ ax.set_title('Autokorrelation gesamt BW')
 ax.set(xlabel='Zeit t')
 ax.set(ylabel='Korrelation C(t)')
 
-S_A
+now = datetime.now()
+now.strftime("%Y%m%d%H%M%S")
 
-k=0
-temp = np.roll(A, shift = -k)[:lmax]
-B = temp - np.mean(temp) # shift and take the first lmax entries
-S_B = np.sqrt(np.sum(B*B)/lmax) # Standard deviation of B
-print(S_B)
+data
 
-A
+df_excel = pd.read_excel(url,na_filter=False)
+data = df_excel.to_numpy()[6:-3]  # Konvertiere Pandas Dataframe in ein numpy array
+
+data[data == '']=0
+
+data
+
+data_int
+
+dict_EWZkreise[keyString('Freiburg',dict_EWZkreise)]
+
+sum(dict_EWZkreise.values())
 
 
