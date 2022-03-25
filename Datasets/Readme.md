@@ -1,4 +1,4 @@
-This database is The database where the signal data are taken from is located at 
+The database where the signal data are taken from is located at 
 
 https://archive.physionet.org/physiobank/database/ptbdb/
 
