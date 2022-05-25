@@ -13,18 +13,28 @@
 # ---
 
 import numpy as np
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
+
+# # Harmonic oscillator revisited
+#
+# Die Oszillatorgleichung lautet $m\cdot \ddot{x} + k\cdot x = 0$
+#
+# \begin{align}
+# \dot{x} &= v\\
+# \dot{v} &= -\omega^2 x\\
+# \end{align}
 
 # Harmonischer Oszillator
 x = np.zeros(100000)
 x[0] = 1./np.sqrt(2.)
 v = np.zeros(100000)
 v[0] = 1./np.sqrt(2.)
-dt = .1
+dt = .01
 #
 for i in np.arange(1,100000):
-    v[i] = v[i-1] - x[i-1]*dt
-    x[i] = x[i-1] + v[i]*dt
+    x[i] = x[i-1] + v[i-1]*dt
+    v[i] = v[i-1] - x[i]*dt
 
 
 # %matplotlib notebook
@@ -37,11 +47,18 @@ for i in np.arange(100000,1):
 # %matplotlib notebook
 plt.plot(x,v)
 
-x[0]
 
-from scipy.integrate import odeint
+
+from scipy.integrate import odeint, solve_ivp
 #
-def func(r,t):
+def func4odeint(r,t):
+    x,v=r
+    # here you enter the differential equation system
+    dx=v
+    dv=-x
+    return dx,dv
+#
+def func4solve_ivp(t,r):
     x,v=r
     # here you enter the differential equation system
     dx=v
@@ -50,14 +67,83 @@ def func(r,t):
 
 
 # here you integrate the DE and make a side by side plot
+ti = 0.
+tf = 1000.
 r0=(1./np.sqrt(2.),1./np.sqrt(2.))
-t=np.linspace(0,100,10000)  # We do 10000 steps in the iterval [0,100]
-pos=odeint(func,r0,t) # Integrate the system of differential equations
+#
+t=np.linspace(0,1000,10000)  # We do 10000 steps in the iterval [0,100]
+t_eval = np.linspace(0,1000,10000)
+pos = odeint(func4odeint,r0,t) # Integrate the system of differential equations
+sol = solve_ivp(func4solve_ivp,[ti, tf],r0, method = 'DOP853', t_eval=t_eval, rtol = 1.e-10, atol = 1.e-12)
 
 x = pos.T[0]
 v = pos.T[1]
 
 # %matplotlib notebook
 plt.plot(x,v)
+
+x,v = sol.y
+
+# %matplotlib notebook
+plt.plot(x,v)
+
+
+# # Planetenbewegung
+# Die Newton'sche Bewegungsgleichung für einen Massenpunkt im Zentralfeld lautet
+# $$m\ddot{\mathbf{r}}=-\frac{\Gamma Mm}{r^2}\frac{\mathbf{r}}{r}$$
+# Man kann durch $m$ dividieren und erhält
+# \begin{align}
+# \ddot{x} &= -\frac{\Gamma M}{r^2}\frac{x}{r}\\
+# \ddot{y} &= -\frac{\Gamma M}{r^2}\frac{y}{r}
+# \end{align}
+# Wir schreiben das ganze als System von 4 gekoppelten gewöhnlichen Differentialgleichungen 1. Ordnung
+# \begin{align}
+# \dot{x}   &= v_x\\
+# \dot{v}_x &= -\frac{\Gamma M}{r^3}x\\
+# \dot{y}   &= v_y\\
+# \dot{v}_y &= -\frac{\Gamma M}{r^3}y
+# \end{align}
+#
+# Der Abstand ist $r = \sqrt{x^2+y^2}$
+
+# Let's define the function
+def func(t, z):
+    GammaM = 1.
+    Gammam = 1.e-3
+    x1,vx1,y1,vy1,x2,vx2,y2,vy2 = z
+    r1 = np.sqrt(x1**2 + y1**2)
+    r2 = np.sqrt(x2**2 + y2**2)
+    r12 = np.sqrt((x1-x2)**2+(y1-y2)**2)
+    dx1 = vx1
+    dvx1 = -GammaM/r1**3 * x1 + Gammam/r12**3*(x2-x1)
+    dy1 = vy1
+    dvy1 = -GammaM/r1**3 * y1 + Gammam/r12**3*(y2-y1)
+    dx2 = vx2
+    dvx2 = -GammaM/r2**3 * x2 + Gammam/r12**3*(x1-x2)
+    dy2 = vy2
+    dvy2 = -GammaM/r2**3 * y2 + Gammam/r12**3*(y1-y2)
+    return [dx1,dvx1,dy1,dvy1,dx2,dvx2,dy2,dvy2]
+
+
+# here you integrate the DE and make a side by side plot
+ti = 0.
+tf = 1000.
+r0=(1.,0.,0.,1.,2.,0.,0.,.9)
+t_eval = np.linspace(ti,tf,10000)
+GammaM = 1.
+#
+sol = solve_ivp(func, [ti, tf],r0, method = 'DOP853', t_eval=t_eval, rtol = 1.e-10, atol = 1.e-12)
+
+x1 = sol.y[0]
+y1 = sol.y[2]
+x2 = sol.y[4]
+y2 = sol.y[6]
+xcom = (x1+x2)/2.
+ycom = (y1+y2)/2.
+
+# %matplotlib notebook
+plt.plot(x1,y1)
+plt.plot(x2,y2)
+plt.plot(xcom,ycom)
 
 
