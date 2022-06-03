@@ -105,30 +105,65 @@ plt.plot(x,v)
 # \end{align}
 #
 # Der Abstand ist $r = \sqrt{x^2+y^2}$
+#
+# ### Periheldrehung des Merkur
+#
+# Das Gravitationspotential nahe einer Gravitationsquelle ergibt sich zu 
+#
+# $$V_{eff} = -\frac{M}{r}+\frac{l^2}{2r^2}-\frac{Ml^2}{r^3}$$
 
 # Let's define the function
 def func(t, z):
-    GammaM = 1.
-    Gammam = 1.e-3
+    m1 = 1.
+    m2 = 2.
+    M  = 1.
+    Gamma = 1.
+#
     x1,vx1,y1,vy1,x2,vx2,y2,vy2 = z
     r1 = np.sqrt(x1**2 + y1**2)
     r2 = np.sqrt(x2**2 + y2**2)
     r12 = np.sqrt((x1-x2)**2+(y1-y2)**2)
     dx1 = vx1
-    dvx1 = -GammaM/r1**3 * x1 + Gammam/r12**3*(x2-x1)
+    dvx1 = -Gamma*M/r1**3 * x1 + Gamma*m2/r12**3*(x2-x1)
     dy1 = vy1
-    dvy1 = -GammaM/r1**3 * y1 + Gammam/r12**3*(y2-y1)
+    dvy1 = -Gamma*M/r1**3 * y1 + Gamma*m2/r12**3*(y2-y1)
     dx2 = vx2
-    dvx2 = -GammaM/r2**3 * x2 + Gammam/r12**3*(x1-x2)
+    dvx2 = -Gamma*M/r2**3 * x2 + Gamma*m1/r12**3*(x1-x2)
     dy2 = vy2
-    dvy2 = -GammaM/r2**3 * y2 + Gammam/r12**3*(y1-y2)
+    dvy2 = -Gamma*M/r2**3 * y2 + Gamma*m1/r12**3*(y1-y2)
     return [dx1,dvx1,dy1,dvy1,dx2,dvx2,dy2,dvy2]
+
+
+# Let's define the function
+def func(t, z):
+    lsquare = (7.e10*47400.)**2
+    GammaMm = 3.3e23*6.672e-11*2.*1.e30*lsquare
+    x1,vx1,y1,vy1 = z
+    r1 = np.sqrt(x1**2 + y1**2)
+    dx1 = vx1
+    dvx1 = -GammaMm/r1**3 * x1 - lsquare/2./r1**4*x1-GammaMm/r1**5 *x1#+ Gammam/r12**3*(x2-x1)
+    dy1 = vy1
+    dvy1 = -GammaMm/r1**3 * y1 - lsquare/2./r1**4*x1- GammaMm/r1**5 *y1#+ Gammam/r12**3*(y2-y1)
+    return [dx1,dvx1,dy1,dvy1]
+
+
+# Let's define the function
+def func(t, z):
+    x1,vx1,y1,vy1 = z
+    GammaM = 1.
+    r1 = np.sqrt(x1**2 + y1**2)
+    dx1 = vx1
+    dvx1 = -GammaM/r1**3 * x1 - 0.01*GammaM/r1**5 *x1#+ Gammam/r12**3*(x2-x1)
+    dy1 = vy1
+    dvy1 = -GammaM/r1**3 * y1 - 0.01*GammaM/r1**5 *y1#+ Gammam/r12**3*(y2-y1)
+    return [dx1,dvx1,dy1,dvy1]
 
 
 # here you integrate the DE and make a side by side plot
 ti = 0.
 tf = 1000.
 r0=(1.,0.,0.,1.,2.,0.,0.,.9)
+#r0=(7.e10,0.,0.,47400.)
 t_eval = np.linspace(ti,tf,10000)
 GammaM = 1.
 #
@@ -138,12 +173,12 @@ x1 = sol.y[0]
 y1 = sol.y[2]
 x2 = sol.y[4]
 y2 = sol.y[6]
-xcom = (x1+x2)/2.
-ycom = (y1+y2)/2.
+#xcom = (x1+x2)/2.
+#ycom = (y1+y2)/2.
 
 # %matplotlib notebook
 plt.plot(x1,y1)
 plt.plot(x2,y2)
-plt.plot(xcom,ycom)
+#plt.plot(xcom,ycom)
 
 
